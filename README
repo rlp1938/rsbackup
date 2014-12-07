@@ -5,6 +5,9 @@ use. The normal backup script does no deletion in the backup copy but
 writes a list of what would have been deleted to $HOME/cruft. After
 manual review of the content of 'cruft', the cleanup script may be run.
 
+The repo includes a sample 'excludes' file that should be reviewed to
+make it meet your needs.
+
 See INSTALL for installation.
 
 Once installed and it is being run regularly by cron or manually you
