@@ -1,0 +1,11 @@
+README for rsbackup.
+
+Uses two scripts, backup.sh for routine use, and cleanup.sh for sometime
+use. The normal backup script does no deletion in the backup copy but
+writes a list of what would have been deleted to $HOME/cruft. After
+manual review of the content of 'cruft', the cleanup script may be run.
+
+See INSTALL for installation.
+
+Once installed and it is being run regularly by cron or manually you
+should review $HOME/cruft and $HOME/backup.log

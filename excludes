@@ -1,0 +1,12 @@
+# excludes
+# pattern followed by 0 of more options for grep all space separated;
+# a real space, do not use tabs etc.
+# If the pattern needs to be protected in any way do it here.
+~swp$
+~bak$
+.cache/*
+.opera*
+.mozilla/*
+.workrave/*
+.Skype/*
+.ViberPC/*

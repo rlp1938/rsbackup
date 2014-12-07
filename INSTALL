@@ -1,0 +1,14 @@
+INSTALL for rsbackup
+
+Whether you clone the repo or download the zip file, once you have
+access to the files:
+chmod +x backup.sh
+chmod +x cleanup.sh
+sudo cp backup.sh /usr/local/bin
+sudo cp cleanup.sh /usr/local/bin
+cp excludes $HOME
+
+After that I suggest you make a cron job to regularly run backup.sh
+
+
+
