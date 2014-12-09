@@ -6,11 +6,16 @@
 # with an option to turn the deletions off for when some large d/l is
 # in progress.
 
-cd
+cd	# make sure I'm at $HOME
+
+if [[ "$BACKUP_RUNNING" -eq 1 ]]; then
+	exit	# quit silently
+fi
+export BACKUP_RUNNING=1
 
 home="$HOME"/
 #echo home "$home"
-exec > "$home"backup.log
+exec >> "$home"backup.log	# cumulative log
 
 back=`ls -R /media/ 2> /dev/null |grep '/backup' |head -n1`
 
@@ -27,6 +32,7 @@ tmpcruft='/tmp/cruft'
 cruft="$home"cruft
 excl="$home"excludes
 
+date
 echo home "$home"
 echo back "$back"
 echo tmpcruft "$tmpcruft"
@@ -58,6 +64,8 @@ rsync -av --dry-run --del --links --hard-links "$home" "$back" |grep '^deleting'
 
 grep -v '^deleting [.]' "$tmpcruft" > "$cruft"
 # I run 'cleanup.sh' a lot less often than I run 'backup.sh'
+
+unset BACKUP_RUNNING
 
 
 

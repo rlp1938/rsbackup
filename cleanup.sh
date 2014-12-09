@@ -4,6 +4,12 @@
 
 cd
 
+if [[ "$BACKUP_RUNNING" -eq 1 ]]; then
+	echo "Backup is running, try again later."
+	exit	# quit
+fi
+export BACKUP_RUNNING=1
+
 home="$HOME"/
 #echo home "$home"
 exec > "$home"cleanup.log
@@ -23,6 +29,7 @@ tmpcruft='/tmp/cruft'
 cruft="$home"cruft
 excl="$home"excludes
 
+date
 echo home "$home"
 echo back "$back"
 echo tmpcruft "$tmpcruft"
@@ -31,3 +38,5 @@ echo cruft "$cruft"
 sleep 2
 
 rsync -av --del --links --hard-links --exclude-from="$excl" "$home" "$back"
+
+unset BACKUP_RUNNING
