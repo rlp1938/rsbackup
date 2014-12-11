@@ -2,41 +2,56 @@
 # cleanup.sh - get rid of unwanted files from backup.
 #
 
-cd
+cd	# make sure I'm at $HOME
 
-if [[ "$BACKUP_RUNNING" -eq 1 ]]; then
-	echo "Backup is running, try again later."
-	exit	# quit
-fi
-export BACKUP_RUNNING=1
 
 home="$HOME"/
-#echo home "$home"
-exec > "$home"cleanup.log
+logdir="$home"log/
+lockdir="$home"lock/
+logfile="$logdir"cleanup.log
+lockfile="$lockdir"backup.lock
 
 back=`ls -R /media/ 2> /dev/null |grep '/backup' |head -n1`
+back=`dirname "$back"`
+back="$back"/backup/
 
-#echo back "$back"
+if [[ ! -d "$logdir" ]]; then
+	mkdir "$logdir"
+fi
+
+if [[ ! -d "$lockdir" ]]; then
+	mkdir "$lockdir"
+fi
+
+
+if [[ -f "$lockfile" ]]; then
+	echo "Backup is already running, quitting."
+	exit
+fi
+
+exec > "$logfile"	# individual log
+
 if [[ -z "$back" ]]; then
   echo Backup drive not mounted, quitting.
   exit 1
 fi
-back=`dirname "$back"`
-back="$back"/backup/
-#echo back2 "$back"
 
-tmpcruft='/tmp/cruft'
-cruft="$home"cruft
+touch "$lockfile"
+sync
+
 excl="$home"excludes
 
 date
 echo home "$home"
 echo back "$back"
-echo tmpcruft "$tmpcruft"
-echo cruft "$cruft"
 
 sleep 2
 
-rsync -av --del --links --hard-links --exclude-from="$excl" "$home" "$back"
+rsync -av --del --links --hard-links --exclude-from="$excl" \
+"$home" "$back"
 
-unset BACKUP_RUNNING
+rm "$lockfile"
+date
+echo --------
+echo ' '
+

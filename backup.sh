@@ -8,25 +8,40 @@
 
 cd	# make sure I'm at $HOME
 
-if [[ "$BACKUP_RUNNING" -eq 1 ]]; then
-	exit	# quit silently
-fi
-export BACKUP_RUNNING=1
 
 home="$HOME"/
-#echo home "$home"
-exec >> "$home"backup.log	# cumulative log
+logdir="$home"log/
+lockdir="$home"lock/
+logfile="$logdir"backup.log
+lockfile="$lockdir"backup.lock
 
 back=`ls -R /media/ 2> /dev/null |grep '/backup' |head -n1`
+back=`dirname "$back"`
+back="$back"/backup/
 
-#echo back "$back"
+if [[ ! -d "$logdir" ]]; then
+	mkdir "$logdir"
+fi
+
+if [[ ! -d "$lockdir" ]]; then
+	mkdir "$lockdir"
+fi
+
+
+if [[ -f "$lockfile" ]]; then
+	echo "Backup is already running, quitting."
+	exit
+fi
+
+exec >> "$logfile"	# cumulative log
+
 if [[ -z "$back" ]]; then
   echo Backup drive not mounted, quitting.
   exit 1
 fi
-back=`dirname "$back"`
-back="$back"/backup/
-#echo back2 "$back"
+
+touch "$lockfile"
+sync
 
 tmpcruft='/tmp/cruft'
 cruft="$home"cruft
@@ -55,17 +70,21 @@ rsync -av --links --hard-links --exclude-from="$excl" "$home" "$back"
 # used the --del option. I review that list and then run 'cleanup.sh'
 # which does use the --del option without the --dry-run option.
 
-# the grep gets rid of everything except the 'deleting' notifications.
-rsync -av --dry-run --del --links --hard-links "$home" "$back" |grep '^deleting' > "$tmpcruft"
-# This second grep removes the 'deleting' messages from the dot files
-# which comprises all the browser cache stuff, thumbnails etc. A 'hole'
-# can appear in these but I'm happy to delete these sight unseen.
-# Everything else will show up for manual review before deletion.
+exec > "$tmpcruft"
+rsync -av --dry-run --del --links --hard-links --exclude-from="$excl" \
+"$home" "$back"
 
-grep -v '^deleting [.]' "$tmpcruft" > "$cruft"
+exec > "$cruft"
+
+# the grep gets rid of everything except the 'deleting' notifications.
+grep '^deleting' "$tmpcruft"
+
+rm "$tmpcruft"
+
 # I run 'cleanup.sh' a lot less often than I run 'backup.sh'
 
-unset BACKUP_RUNNING
-
-
+rm "$lockfile"
+date
+echo -----
+echo ' '
 
